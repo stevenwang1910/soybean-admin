@@ -12,19 +12,11 @@ import type {
   RadarSeriesOption,
   ScatterSeriesOption
 } from 'echarts/charts';
-import {
-  DatasetComponent,
-  DataZoomInsideComponent,
-  GridComponent,
-  LegendComponent,
-  TitleComponent,
-  ToolboxComponent,
-  TooltipComponent,
-  TransformComponent
-} from 'echarts/components';
+import { DatasetComponent, DataZoomInsideComponent, DataZoomSliderComponent, GridComponent, LegendComponent, TitleComponent, ToolboxComponent, TooltipComponent, TransformComponent } from 'echarts/components';
 import type {
   DatasetComponentOption,
   DataZoomInsideComponentOption,
+  DataZoomSliderComponentOption,
   GridComponentOption,
   LegendComponentOption,
   TitleComponentOption,
@@ -51,6 +43,7 @@ export type ECOption = echarts.ComposeOption<
   | ToolboxComponentOption
   | DatasetComponentOption
   | DataZoomInsideComponentOption
+  | DataZoomSliderComponentOption
 >;
 
 echarts.use([
@@ -62,6 +55,7 @@ echarts.use([
   TransformComponent,
   ToolboxComponent,
   DataZoomInsideComponent,
+  DataZoomSliderComponent,
   BarChart,
   CandlestickChart,
   LineChart,
