@@ -1,9 +1,10 @@
 import { computed, effectScope, nextTick, onScopeDispose, shallowRef, watch } from 'vue';
 import { useElementSize } from '@vueuse/core';
 import * as echarts from 'echarts/core';
-import { BarChart, GaugeChart, LineChart, PictorialBarChart, PieChart, RadarChart, ScatterChart } from 'echarts/charts';
+import { BarChart, CandlestickChart, GaugeChart, LineChart, PictorialBarChart, PieChart, RadarChart, ScatterChart } from 'echarts/charts';
 import type {
   BarSeriesOption,
+  CandlestickSeriesOption,
   GaugeSeriesOption,
   LineSeriesOption,
   PictorialBarSeriesOption,
@@ -13,6 +14,7 @@ import type {
 } from 'echarts/charts';
 import {
   DatasetComponent,
+  DataZoomInsideComponent,
   GridComponent,
   LegendComponent,
   TitleComponent,
@@ -22,6 +24,7 @@ import {
 } from 'echarts/components';
 import type {
   DatasetComponentOption,
+  DataZoomInsideComponentOption,
   GridComponentOption,
   LegendComponentOption,
   TitleComponentOption,
@@ -34,6 +37,7 @@ import { useThemeStore } from '@/store/modules/theme';
 
 export type ECOption = echarts.ComposeOption<
   | BarSeriesOption
+  | CandlestickSeriesOption
   | LineSeriesOption
   | PieSeriesOption
   | ScatterSeriesOption
@@ -46,6 +50,7 @@ export type ECOption = echarts.ComposeOption<
   | GridComponentOption
   | ToolboxComponentOption
   | DatasetComponentOption
+  | DataZoomInsideComponentOption
 >;
 
 echarts.use([
@@ -56,7 +61,9 @@ echarts.use([
   DatasetComponent,
   TransformComponent,
   ToolboxComponent,
+  DataZoomInsideComponent,
   BarChart,
+  CandlestickChart,
   LineChart,
   PieChart,
   ScatterChart,
