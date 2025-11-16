@@ -25,7 +25,7 @@ const mockAdapter = createAlovaMockAdapter([featureUsers20241014], {
   enable: true,
   matchMode: 'methodurl'
 });
-export const alova = createAlovaRequest(
+export const defineAlova = createAlovaRequest;export const alova = createAlovaRequest(
   {
     baseURL,
     requestAdapter: import.meta.env.DEV ? mockAdapter : adapterFetch()

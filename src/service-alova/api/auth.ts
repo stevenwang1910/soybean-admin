@@ -54,3 +54,13 @@ export function fetchCustomBackendError(code: string, msg: string) {
     shareRequest: false
   });
 }
+
+/**
+ * Check property permission
+ *
+ * @param pageKey Page key
+ * @param propertyKey Property key
+ */
+export function fetchCheckPropertyPermission(pageKey: string, propertyKey: string) {
+  return alova.Post<boolean>('/auth/check-property-permission', { pageKey, propertyKey });
+}
