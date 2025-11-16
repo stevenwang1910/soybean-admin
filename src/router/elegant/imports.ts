@@ -57,6 +57,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   plugin_tables_vtable: () => import("@/views/plugin/tables/vtable/index.vue"),
   plugin_typeit: () => import("@/views/plugin/typeit/index.vue"),
   plugin_video: () => import("@/views/plugin/video/index.vue"),
+  plugin_workflow: () => import("@/views/plugin/workflow/index.vue"),
   "pro-naive_form_basic": () => import("@/views/pro-naive/form/basic/index.vue"),
   "pro-naive_form_query": () => import("@/views/pro-naive/form/query/index.vue"),
   "pro-naive_form_step": () => import("@/views/pro-naive/form/step/index.vue"),

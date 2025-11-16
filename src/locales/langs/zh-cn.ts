@@ -295,7 +295,10 @@ const local: App.I18n.Schema = {
     plugin_gantt_vtable: 'VTableGantt',
     plugin_typeit: '打字机',
     plugin_tables: '表格',
-    plugin_tables_vtable: 'VTable'
+    plugin_tables_vtable: 'VTable',
+    plugin_workflow: '工作流',
+    plugin_workflow_designer: '流程设计器',
+    plugin_workflow_instance: '流程实例管理'
   },
   page: {
     login: {

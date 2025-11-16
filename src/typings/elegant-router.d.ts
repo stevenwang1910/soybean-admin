@@ -87,6 +87,7 @@ declare module "@elegant-router/types" {
     "plugin_tables_vtable": "/plugin/tables/vtable";
     "plugin_typeit": "/plugin/typeit";
     "plugin_video": "/plugin/video";
+    "plugin_workflow": "/plugin/workflow";
     "pro-naive": "/pro-naive";
     "pro-naive_form": "/pro-naive/form";
     "pro-naive_form_basic": "/pro-naive/form/basic";
@@ -216,6 +217,7 @@ declare module "@elegant-router/types" {
     | "plugin_tables_vtable"
     | "plugin_typeit"
     | "plugin_video"
+    | "plugin_workflow"
     | "pro-naive_form_basic"
     | "pro-naive_form_query"
     | "pro-naive_form_step"

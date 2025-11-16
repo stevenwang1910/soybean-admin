@@ -608,6 +608,35 @@ export const generatedRoutes: GeneratedRoute[] = [
           i18nKey: 'route.plugin_video',
           icon: 'mdi:video'
         }
+      },
+      {
+        name: 'plugin_workflow',
+        path: '/plugin/workflow',
+        component: 'view.plugin_workflow',
+        meta: {
+          title: 'plugin_workflow',
+          i18nKey: 'route.plugin_workflow'
+        },
+        children: [
+          {
+            name: 'plugin_workflow_designer',
+            path: 'designer',
+            component: 'view.plugin_workflow_designer',
+            meta: {
+              title: 'plugin_workflow_designer',
+              i18nKey: 'route.plugin_workflow_designer'
+            }
+          },
+          {
+            name: 'plugin_workflow_instance',
+            path: 'instance',
+            component: 'view.plugin_workflow_instance-manager',
+            meta: {
+              title: 'plugin_workflow_instance',
+              i18nKey: 'route.plugin_workflow_instance'
+            }
+          }
+        ]
       }
     ]
   },
