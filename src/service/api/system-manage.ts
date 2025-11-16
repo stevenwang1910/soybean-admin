@@ -53,3 +53,34 @@ export function fetchGetMenuTree() {
     method: 'get'
   });
 }
+
+/** import users */
+export function fetchImportUsers(data: Api.SystemManage.User[]) {
+  return request<{ success: number; failed: number }>({
+    url: '/systemManage/importUsers',
+    method: 'post',
+    data
+  });
+}
+
+/** get excel operation logs */
+export function fetchExcelOperationLogs(params?: {
+  page?: number;
+  size?: number;
+  type?: 'import' | 'export' | 'template';
+  operator?: string;
+  startTime?: string;
+  endTime?: string;
+}) {
+  return request<{
+    records: any[];
+    total: number;
+    pages: number;
+    current: number;
+    size: number;
+  }>({
+    url: '/systemManage/getExcelOperationLogs',
+    method: 'get',
+    params
+  });
+}
