@@ -116,6 +116,7 @@
     "eslint-plugin-vue": "10.5.1",
     "kolorist": "1.8.0",
     "lint-staged": "16.2.6",
+    "playwright": "^1.56.1",
     "pro-naive-ui-resolver": "1.0.2",
     "sass": "1.93.3",
     "simple-git-hooks": "2.13.1",
