@@ -4,6 +4,7 @@ import { useMessage } from 'naive-ui';
 import JsBarcode from 'jsbarcode';
 import type { Options } from 'jsbarcode';
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { useLoading } from '@sa/hooks';
 import SvgIcon from '@/components/custom/svg-icon.vue';
 
@@ -111,6 +112,7 @@ async function exportToPDF() {
     const margin = 20;
     const colWidth = (pageWidth - margin * 2) / 2;
     let currentY = margin + 20; // 顶部留出标题空间
+    const itemHeight = 80; // 为每个条码项预留固定高度，确保排版一致
 
     // 添加标题
     doc.setFontSize(18);
@@ -122,37 +124,37 @@ async function exportToPDF() {
       const svgElement = document.getElementById(code.id) as SVGElement;
 
       if (svgElement) {
-        // 将 SVG 转换为 Data URL
-        const svgData = new XMLSerializer().serializeToString(svgElement);
-        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-        const svgUrl = URL.createObjectURL(svgBlob);
+        // 检查是否需要新页面
+        if (currentY + itemHeight > pageHeight - margin) {
+          doc.addPage();
+          currentY = margin;
+        }
 
         // 计算位置
         const colIndex = i % 2;
         const x = margin + colIndex * colWidth;
         const y = currentY;
         const width = colWidth - 10;
-        const height = 60;
 
-        // 添加条码类型名称
-        doc.setFontSize(12);
-        doc.text(code.title, x, y - 10);
+        // 使用 html2canvas 将条码区域转换为图片
+        const canvas = await html2canvas(svgElement, {
+          scale: 3, // 放大倍数以提高清晰度
+          logging: false
+        });
+
+        // 将 canvas 转换为 Data URL
+        const dataUrl = canvas.toDataURL('image/png');
 
         // 添加条码图像
-        doc.addImage(svgUrl, 'SVG', x, y, width, height);
+        const imageHeight = (canvas.height / canvas.width) * width;
+        doc.addImage(dataUrl, 'PNG', x, y + 10, width, imageHeight);
 
-        // 释放 URL
-        URL.revokeObjectURL(svgUrl);
-
-        // 换行或换页
+        // 换行
         if ((i + 1) % 2 === 0) {
-          currentY += 80;
-        }
-
-        // 检查是否需要新页面
-        if (currentY > pageHeight - margin - 60) {
-          doc.addPage();
-          currentY = margin;
+          currentY += itemHeight;
+        } else if (i + 1 === codes.length) {
+          // 最后一行只有一个项
+          currentY += itemHeight;
         }
       }
     }
