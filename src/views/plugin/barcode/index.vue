@@ -4,6 +4,7 @@ import JsBarcode from 'jsbarcode';
 import type { Options } from 'jsbarcode';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
+import JSZip from 'jszip';
 
 // 条码类型选项
 const barcodeTypes = [
@@ -66,11 +67,96 @@ const batchConfig = reactive<{
   barcodeField: string;
   includeInfo: boolean;
   exportFormat: string;
+  useCustomStyle: boolean; // 是否使用自定义样式
+  // 为不同条码类型配置不同的样式
+  styleByFormat: {
+    [key: string]: {
+      type: string;
+      style: {
+        lineColor: string;
+        backgroundColor: string;
+        height: number;
+        width: number;
+      };
+      textStyle: {
+        fontSize: number;
+        fontOptions: string;
+        textPosition: 'top' | 'bottom';
+        textMargin: number;
+      };
+    };
+  };
+  // 当前选中的样式配置
+  selectedStyleFormat: string;
 }>({
   importedData: [],
   barcodeField: '',
   includeInfo: true,
-  exportFormat: 'png'
+  exportFormat: 'png',
+  useCustomStyle: false,
+  styleByFormat: {
+    code39: {
+      type: 'code39',
+      style: {
+        lineColor: '#000000',
+        backgroundColor: '#ffffff',
+        height: 100,
+        width: 2
+      },
+      textStyle: {
+        fontSize: 12,
+        fontOptions: 'normal',
+        textPosition: 'bottom',
+        textMargin: 5
+      }
+    },
+    code128: {
+      type: 'code128',
+      style: {
+        lineColor: '#000000',
+        backgroundColor: '#ffffff',
+        height: 100,
+        width: 2
+      },
+      textStyle: {
+        fontSize: 12,
+        fontOptions: 'normal',
+        textPosition: 'bottom',
+        textMargin: 5
+      }
+    },
+    ean13: {
+      type: 'ean13',
+      style: {
+        lineColor: '#000000',
+        backgroundColor: '#ffffff',
+        height: 100,
+        width: 2
+      },
+      textStyle: {
+        fontSize: 12,
+        fontOptions: 'normal',
+        textPosition: 'bottom',
+        textMargin: 5
+      }
+    },
+    upc: {
+      type: 'upc',
+      style: {
+        lineColor: '#000000',
+        backgroundColor: '#ffffff',
+        height: 100,
+        width: 2
+      },
+      textStyle: {
+        fontSize: 12,
+        fontOptions: 'normal',
+        textPosition: 'bottom',
+        textMargin: 5
+      }
+    }
+  },
+  selectedStyleFormat: 'code128'
 });
 
 // 预览条码配置（合并配置）
@@ -137,8 +223,17 @@ function handleFileImport(event: Event) {
 
   reader.onload = e => {
     try {
-      const data = new Uint8Array(e.target?.result as ArrayBuffer);
-      const workbook = XLSX.read(data, { type: 'array' });
+      let workbook;
+      if (file.name.endsWith('.csv')) {
+        // 处理CSV文件：使用Text方式读取并直接解析，避免编码转换问题
+        const text = e.target?.result as string;
+        // 使用XLSX解析CSV文本，设置正确的编码
+        workbook = XLSX.read(text, { type: 'string', codepage: 65001 });
+      } else {
+        // Excel文件正常处理
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        workbook = XLSX.read(data, { type: 'array' });
+      }
       const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json(firstSheet);
 
@@ -148,13 +243,19 @@ function handleFileImport(event: Event) {
       if (firstStringField) {
         batchConfig.barcodeField = firstStringField;
       }
+      window.$message?.success('文件导入成功');
     } catch (error) {
       console.error('导入文件失败:', error);
-      // 可以添加错误提示
+      window.$message?.error('文件导入失败，请检查文件格式');
     }
   };
 
-  reader.readAsArrayBuffer(file);
+  // 根据文件类型选择读取方式
+  if (file.name.endsWith('.csv')) {
+    reader.readAsText(file, 'utf-8');
+  } else {
+    reader.readAsArrayBuffer(file);
+  }
 }
 
 // 文件输入引用
@@ -171,22 +272,55 @@ function generateBatchBarcodes() {
   // 清空之前的批量条码数据
   batchBarcodes.value = [];
 
-  // 生成所有条码
-  batchConfig.importedData.forEach(item => {
+  // 生成所有条码，限制在1000条以内
+  batchConfig.importedData.slice(0, 1000).forEach(item => {
     const barcodeValue = String(item[batchConfig.barcodeField]);
     const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 
     try {
-      JsBarcode(svgElement, barcodeValue, previewOptions.value);
+      // 根据不同条码类型使用相应的配置
+      let barcodeType: string;
+      // 根据条码值自动检测类型
+      if (/^\d{13}$/.test(barcodeValue)) {
+        barcodeType = 'ean13';
+      } else if (/^\d{12}$/.test(barcodeValue)) {
+        barcodeType = 'upc';
+      } else if (/^\d{8}$/.test(barcodeValue)) {
+        barcodeType = 'ean8';
+      } else if (/^[0-9A-Z\-\.\$\/+% \*]*$/.test(barcodeValue)) {
+        barcodeType = 'code39';
+      } else {
+        barcodeType = 'code128';
+      }
+      // 合并配置
+      const options: Options = {
+        ...(batchConfig.useCustomStyle
+          ? {
+              format: barcodeType,
+              lineColor: batchConfig.styleByFormat[barcodeType].style.lineColor,
+              background: batchConfig.styleByFormat[barcodeType].style.backgroundColor,
+              height: batchConfig.styleByFormat[barcodeType].style.height,
+              width: batchConfig.styleByFormat[barcodeType].style.width,
+              fontSize: batchConfig.styleByFormat[barcodeType].textStyle.fontSize,
+              fontOptions: batchConfig.styleByFormat[barcodeType].textStyle.fontOptions,
+              textPosition: batchConfig.styleByFormat[barcodeType].textStyle.textPosition,
+              textMargin: batchConfig.styleByFormat[barcodeType].textStyle.textMargin,
+              displayValue: true
+            }
+          : previewOptions.value)
+      };
+
+      JsBarcode(svgElement, barcodeValue, options);
 
       // 将SVG转换为字符串
       const svgString = new XMLSerializer().serializeToString(svgElement);
-      batchBarcodes.value.push({ svg: svgString, data: item });
+      batchBarcodes.value.push({ svg: svgString, data: item, format: barcodeType });
     } catch (error) {
       console.error('生成条码失败:', error);
       // 可以添加错误提示
     }
   });
+  window.$message?.success('批量条码生成完成');
 }
 
 // 批量导出条码
@@ -194,76 +328,96 @@ function exportBatchBarcodes() {
   if (batchConfig.importedData.length === 0) return;
   if (!batchConfig.barcodeField) return;
 
-  // 如果还没有生成条码，先生成
+  // 确保条码已经生成
   if (batchBarcodes.value.length === 0) {
     generateBatchBarcodes();
   }
 
-  // 导出所有条码
-  batchBarcodes.value.forEach((barcode, index) => {
-    // 创建一个临时的SVG元素
-    const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    tempSvg.innerHTML = barcode.svg;
+  // 创建JSZip实例
+  const zip = new JSZip();
+  const promises: Promise<void>[] = [];
 
-    // 设置SVG尺寸
-    const svgRect = tempSvg.getBoundingClientRect();
-    const svgWidth = svgRect.width || 300;
-    const svgHeight = svgRect.height || 150;
-    tempSvg.setAttribute('width', svgWidth.toString());
-    tempSvg.setAttribute('height', svgHeight.toString());
+  // 导出所有条码，支持1000条以内
+  const exportData = batchBarcodes.value.slice(0, 1000);
 
-    // 将SVG转换为Canvas
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+  exportData.forEach((barcode, index) => {
+    const promise = new Promise<void>((resolve, reject) => {
+      // 创建一个临时的SVG元素
+      const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      tempSvg.innerHTML = barcode.svg;
 
-    // 计算Canvas高度（如果包含信息需要额外空间）
-    let canvasHeight = svgHeight;
-    const infoY = svgHeight + 20;
-    if (batchConfig.includeInfo) {
-      const infoLines = Object.entries(barcode.data).length;
-      canvasHeight += 20 + infoLines * 20;
-    }
+      // 设置SVG尺寸
+      const svgRect = tempSvg.getBoundingClientRect();
+      const svgWidth = svgRect.width || 300;
+      const svgHeight = svgRect.height || 150;
+      tempSvg.setAttribute('width', svgWidth.toString());
+      tempSvg.setAttribute('height', svgHeight.toString());
 
-    canvas.width = svgWidth;
-    canvas.height = canvasHeight;
+      // 将SVG转换为Canvas
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return resolve();
 
-    // 创建Image对象并绘制到Canvas
-    const img = new Image();
-    // 处理跨域问题
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      // 绘制SVG
-      ctx.drawImage(img, 0, 0);
-
-      // 如果需要包含商品信息，添加到Canvas
+      // 计算Canvas高度（如果包含信息需要额外空间）
+      let canvasHeight = svgHeight;
+      const infoY = svgHeight + 20;
       if (batchConfig.includeInfo) {
-        ctx.fillStyle = '#000000';
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'center';
-
-        // 绘制商品信息
-        Object.entries(barcode.data).forEach(([key, value], i) => {
-          const y = infoY + i * 20;
-          ctx.fillText(`${key}: ${value}`, svgWidth / 2, y);
-        });
+        const infoLines = Object.entries(barcode.data).length;
+        canvasHeight += 20 + infoLines * 20;
       }
 
-      // 导出为图片
-      const dataURL = canvas.toDataURL(`image/${batchConfig.exportFormat}`);
-      const blob = dataURLToBlob(dataURL);
-      const barcodeValue = barcode.data[batchConfig.barcodeField];
-      const fileName = `${barcodeValue}.${batchConfig.exportFormat}`;
-      saveAs(blob, fileName);
-    };
-    img.onerror = error => {
-      console.error('图片加载失败:', error);
-    };
+      canvas.width = svgWidth;
+      canvas.height = canvasHeight;
 
-    // 将SVG转换为data URL
-    const svgString = new XMLSerializer().serializeToString(tempSvg);
-    const encodedSvg = encodeURIComponent(svgString);
-    img.src = `data:image/svg+xml;utf-8,${encodedSvg}`;
+      // 创建Image对象并绘制到Canvas
+      const img = new Image();
+      // 处理跨域问题
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        // 绘制SVG
+        ctx.drawImage(img, 0, 0);
+
+        // 如果需要包含商品信息，添加到Canvas
+        if (batchConfig.includeInfo) {
+          ctx.fillStyle = '#000000';
+          ctx.font = '12px Arial Unicode MS'; // 使用支持中文的字体
+          ctx.textAlign = 'center';
+
+          // 绘制商品信息
+          Object.entries(barcode.data).forEach(([key, value], i) => {
+            const y = infoY + i * 20;
+            ctx.fillText(`${key}: ${value}`, svgWidth / 2, y);
+          });
+        }
+
+        // 导出为图片
+        const dataURL = canvas.toDataURL(`image/${batchConfig.exportFormat}`);
+        const blob = dataURLToBlob(dataURL);
+        const barcodeValue = barcode.data[batchConfig.barcodeField];
+        const fileName = `${barcodeValue}.${batchConfig.exportFormat}`;
+        // 添加到zip文件
+        zip.file(fileName, blob);
+        resolve();
+      };
+      img.onerror = error => {
+        console.error('图片加载失败:', error);
+        resolve();
+      };
+
+      // 将SVG转换为data URL，确保中文正确编码
+      const svgString = new XMLSerializer().serializeToString(tempSvg);
+      const encodedSvg = encodeURIComponent(svgString);
+      img.src = `data:image/svg+xml;utf-8,${encodedSvg}`;
+    });
+
+    promises.push(promise);
+  });
+
+  // 所有图片处理完成后下载zip文件
+  Promise.all(promises).then(() => {
+    zip.generateAsync({ type: 'blob' }).then(content => {
+      saveAs(content, `barcodes_${new Date().getTime()}.zip`);
+    });
   });
 }
 
@@ -470,20 +624,152 @@ onMounted(() => {
                   仅显示前 5 条记录
                 </div>
 
-                <div class="flex items-center gap-4">
-                  <NButton type="primary" :disabled="!batchConfig.barcodeField" @click="generateBatchBarcodes">
-                    批量生成
-                  </NButton>
-                  <div class="flex items-center gap-2">
-                    <NCheckbox v-model:checked="batchConfig.includeInfo">包含商品信息</NCheckbox>
-                    <NSelect
-                      v-model:value="batchConfig.exportFormat"
-                      :options="exportFormats"
-                      :style="{ width: '100px' }"
-                    />
-                    <NButton type="success" :disabled="!batchConfig.barcodeField" @click="exportBatchBarcodes">
-                      导出条码
+                <div class="space-y-3">
+                  <!-- 使用自定义样式选项 -->
+                  <div class="flex items-center">
+                    <NCheckbox v-model:checked="batchConfig.useCustomStyle">使用自定义样式</NCheckbox>
+                  </div>
+
+                  <!-- 自定义样式配置 -->
+                  <div v-if="batchConfig.useCustomStyle" class="ml-6 space-y-3">
+                    <div>
+                      <label class="mb-1 block text-sm text-gray-700 font-medium">选择条码类型配置</label>
+                      <NSelect v-model:value="batchConfig.selectedStyleFormat" :options="barcodeTypes" class="w-full" />
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div>
+                        <label class="mb-1 block text-sm text-gray-700 font-medium">条码宽度</label>
+                        <NSlider
+                          v-model:value="batchConfig.styleByFormat[batchConfig.selectedStyleFormat].style.width"
+                          :min="1"
+                          :max="10"
+                          :step="0.5"
+                          class="w-full"
+                        />
+                        <span class="text-xs text-gray-500">
+                          {{ batchConfig.styleByFormat[batchConfig.selectedStyleFormat].style.width }}px
+                        </span>
+                      </div>
+
+                      <div>
+                        <label class="mb-1 block text-sm text-gray-700 font-medium">条码高度</label>
+                        <NSlider
+                          v-model:value="batchConfig.styleByFormat[batchConfig.selectedStyleFormat].style.height"
+                          :min="20"
+                          :max="200"
+                          :step="5"
+                          class="w-full"
+                        />
+                        <span class="text-xs text-gray-500">
+                          {{ batchConfig.styleByFormat[batchConfig.selectedStyleFormat].style.height }}px
+                        </span>
+                      </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div>
+                        <label class="mb-1 block text-sm text-gray-700 font-medium">字体大小</label>
+                        <NSlider
+                          v-model:value="batchConfig.styleByFormat[batchConfig.selectedStyleFormat].textStyle.fontSize"
+                          :min="6"
+                          :max="40"
+                          :step="1"
+                          class="w-full"
+                        />
+                        <span class="text-xs text-gray-500">
+                          {{ batchConfig.styleByFormat[batchConfig.selectedStyleFormat].textStyle.fontSize }}px
+                        </span>
+                      </div>
+
+                      <div>
+                        <label class="mb-1 block text-sm text-gray-700 font-medium">字体样式</label>
+                        <NSelect
+                          v-model:value="
+                            batchConfig.styleByFormat[batchConfig.selectedStyleFormat].textStyle.fontOptions
+                          "
+                          :options="fontOptions"
+                          class="w-full"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div>
+                        <label class="mb-1 block text-sm text-gray-700 font-medium">条码颜色</label>
+                        <input
+                          v-model="batchConfig.styleByFormat[batchConfig.selectedStyleFormat].style.lineColor"
+                          type="color"
+                          class="h-8 w-12 cursor-pointer rounded"
+                        />
+                      </div>
+
+                      <div>
+                        <label class="mb-1 block text-sm text-gray-700 font-medium">背景颜色</label>
+                        <input
+                          v-model="batchConfig.styleByFormat[batchConfig.selectedStyleFormat].style.backgroundColor"
+                          type="color"
+                          class="h-8 w-12 cursor-pointer rounded"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div>
+                        <label class="mb-1 block text-sm text-gray-700 font-medium">字体样式</label>
+                        <NSelect
+                          v-model:value="
+                            batchConfig.styleByFormat[batchConfig.selectedStyleFormat].textStyle.fontOptions
+                          "
+                          :options="fontOptions"
+                          class="w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <label class="mb-1 block text-sm text-gray-700 font-medium">文字位置</label>
+                        <NRadioGroup
+                          v-model:value="
+                            batchConfig.styleByFormat[batchConfig.selectedStyleFormat].textStyle.textPosition
+                          "
+                        >
+                          <NRadio value="top">上方</NRadio>
+                          <NRadio value="bottom">下方</NRadio>
+                        </NRadioGroup>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label class="mb-1 block text-sm text-gray-700 font-medium">文字间距</label>
+                      <NSlider
+                        v-model:value="batchConfig.styleByFormat[batchConfig.selectedStyleFormat].textStyle.textMargin"
+                        :min="0"
+                        :max="50"
+                        :step="1"
+                        class="w-full"
+                      />
+                      <span class="text-xs text-gray-500">
+                        {{ batchConfig.styleByFormat[batchConfig.selectedStyleFormat].textStyle.textMargin }}px
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- 操作按钮 -->
+                  <div class="flex items-center gap-4">
+                    <NButton type="primary" :disabled="!batchConfig.barcodeField" @click="generateBatchBarcodes">
+                      批量生成
                     </NButton>
+                    <div class="flex items-center gap-2">
+                      <NCheckbox v-model:checked="batchConfig.includeInfo">包含商品信息</NCheckbox>
+                      <NSelect
+                        v-model:value="batchConfig.exportFormat"
+                        :options="exportFormats"
+                        :style="{ width: '100px' }"
+                      />
+                      <NButton type="success" :disabled="!batchConfig.barcodeField" @click="exportBatchBarcodes">
+                        导出条码
+                      </NButton>
+                    </div>
                   </div>
                 </div>
               </div>
