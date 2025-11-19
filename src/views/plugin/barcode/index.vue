@@ -4,7 +4,9 @@ import { useMessage } from 'naive-ui';
 import JsBarcode from 'jsbarcode';
 import type { Options } from 'jsbarcode';
 import jsPDF from 'jspdf';
+import 'jspdf/dist/polyfills.es.js';
 import html2canvas from 'html2canvas';
+import pako from 'pako';
 import { useLoading } from '@sa/hooks';
 import SvgIcon from '@/components/custom/svg-icon.vue';
 
@@ -106,60 +108,79 @@ const { loading, startLoading, endLoading } = useLoading(false);
 async function exportToPDF() {
   startLoading();
   try {
+    // 创建一个临时的 div 容器用于生成 PDF
+    const tempContainer = document.createElement('div');
+    // 设置容器可见但不影响页面布局
+    tempContainer.style.position = 'fixed';
+    tempContainer.style.left = '0';
+    tempContainer.style.top = '0';
+    tempContainer.style.width = '100%';
+    tempContainer.style.height = '100%';
+    tempContainer.style.zIndex = '9999';
+    tempContainer.style.background = 'white';
+    tempContainer.innerHTML = `
+      <h1 style="text-align: center; font-size: 24px; margin-bottom: 20px;">条形码类型示例</h1>
+      <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
+        ${codes
+          .map(
+            code => `
+          <div id="${code.id}-pdf" style="width: 300px; text-align: center; margin-bottom: 20px;">
+            <div style="margin-bottom: 10px;">${code.title}</div>
+            <svg id="${code.id}-temp" class="h-130px" />
+          </div>
+        `
+          )
+          .join('')}
+      </div>
+    `;
+    document.body.appendChild(tempContainer);
+
+    // 在临时容器中重新生成条形码
+    codes.forEach(code => {
+      const svgElement = document.getElementById(`${code.id}-temp`);
+      if (svgElement) {
+        JsBarcode(svgElement, code.text, code.options);
+        console.log('Generated barcode for', code.id);
+      } else {
+        console.error('SVG element not found for', code.id);
+      }
+    });
+
+    // 添加延迟确保内容加载完成
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // 使用 html2canvas 生成图片，设置适当的超时确保内容加载完成
+    const canvas = await html2canvas(tempContainer, {
+      scale: 2,
+      useCORS: true,
+      timeout: 5000
+    });
+
+    // 创建 PDF 文档
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = 20;
-    const colWidth = (pageWidth - margin * 2) / 2;
-    let currentY = margin + 20; // 顶部留出标题空间
-    const itemHeight = 80; // 为每个条码项预留固定高度，确保排版一致
+    const imgWidth = pageWidth - 20;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 0;
 
-    // 添加标题
-    doc.setFontSize(18);
-    doc.text('条形码类型示例', margin, margin + 10);
+    // 添加图片到 PDF
+    doc.addImage(canvas, 'PNG', 10, 10, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
 
-    // 遍历所有条码
-    for (let i = 0; i < codes.length; i++) {
-      const code = codes[i];
-      const svgElement = document.getElementById(code.id) as SVGElement;
-
-      if (svgElement) {
-        // 检查是否需要新页面
-        if (currentY + itemHeight > pageHeight - margin) {
-          doc.addPage();
-          currentY = margin;
-        }
-
-        // 计算位置
-        const colIndex = i % 2;
-        const x = margin + colIndex * colWidth;
-        const y = currentY;
-        const width = colWidth - 10;
-
-        // 使用 html2canvas 将条码区域转换为图片
-        const canvas = await html2canvas(svgElement, {
-          scale: 3, // 放大倍数以提高清晰度
-          logging: false
-        });
-
-        // 将 canvas 转换为 Data URL
-        const dataUrl = canvas.toDataURL('image/png');
-
-        // 添加条码图像
-        const imageHeight = (canvas.height / canvas.width) * width;
-        doc.addImage(dataUrl, 'PNG', x, y + 10, width, imageHeight);
-
-        // 换行
-        if ((i + 1) % 2 === 0) {
-          currentY += itemHeight;
-        } else if (i + 1 === codes.length) {
-          // 最后一行只有一个项
-          currentY += itemHeight;
-        }
-      }
+    // 处理多页情况
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      doc.addPage();
+      doc.addImage(canvas, 'PNG', 10, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
     }
 
-    // 保存 PDF
+    // 清理临时容器
+    document.body.removeChild(tempContainer);
+
+    // 下载 PDF
     doc.save('barcode-examples.pdf');
 
     message.success('PDF 导出成功');

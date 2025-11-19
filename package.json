@@ -76,6 +76,7 @@
     "jspdf": "^3.0.3",
     "naive-ui": "2.43.1",
     "nprogress": "0.2.0",
+    "pako": "^2.1.0",
     "pinia": "3.0.3",
     "pinyin-pro": "3.27.0",
     "print-js": "1.6.0",
