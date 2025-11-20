@@ -191,6 +191,10 @@ function handleImportFileUpload(file: File) {
   return false; // 阻止默认上传行为
 }
 
+function handleImportFileChange(fileList: UploadFile[]) {
+  importFileList.value = fileList;
+}
+
 // 解析Excel文件
 async function parseExcelFile(file: File) {
   return new Promise<any[]>((resolve, reject) => {
@@ -239,26 +243,40 @@ function validateImportData(data: any[]) {
   const errors: string[] = [];
   data.forEach((row, index) => {
     // 验证用户名
-    if (!row['用户名']) {
+    if (!row['用户名*'] && !row['用户名']) {
       errors.push(`行 ${index + 2}: 用户名不能为空`);
-    } else if (row['用户名'].length < 3 || row['用户名'].length > 20) {
+    } else if (
+      row['用户名*']?.length < 3 ||
+      row['用户名*']?.length > 20 ||
+      row['用户名']?.length < 3 ||
+      row['用户名']?.length > 20
+    ) {
       errors.push(`行 ${index + 2}: 用户名长度在 3-20 字符之间`);
     }
 
     // 验证邮箱
-    if (!row['邮箱']) {
+    if (!row['邮箱*'] && !row['邮箱']) {
       errors.push(`行 ${index + 2}: 邮箱不能为空`);
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row['邮箱'])) {
+    } else if (
+      (row['邮箱*'] && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row['邮箱*'])) ||
+      (row['邮箱'] && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row['邮箱']))
+    ) {
       errors.push(`行 ${index + 2}: 邮箱格式不正确`);
     }
 
     // 验证性别
-    if (row['性别'] && !['男', '女'].includes(row['性别'])) {
+    if (
+      (row['性别'] && !['男', '女'].includes(row['性别'])) ||
+      (row['性别*'] && !['男', '女'].includes(row['性别*']))
+    ) {
       errors.push(`行 ${index + 2}: 性别只能是男或女`);
     }
 
     // 验证状态
-    if (row['状态'] && !['启用', '禁用'].includes(row['状态'])) {
+    if (
+      (row['状态'] && !['启用', '禁用'].includes(row['状态'])) ||
+      (row['状态*'] && !['启用', '禁用'].includes(row['状态*']))
+    ) {
       errors.push(`行 ${index + 2}: 状态只能是启用或禁用`);
     }
   });
@@ -268,12 +286,12 @@ function validateImportData(data: any[]) {
 // 转换导入数据格式
 function transformImportData(data: any[]) {
   return data.map(row => ({
-    userName: row['用户名'],
-    userEmail: row['邮箱'],
-    userGender: row['性别'] === '男' ? 1 : 2,
-    status: row['状态'] === '启用' ? 1 : 2,
-    nickName: row['昵称'] || '',
-    userPhone: row['手机号'] || ''
+    userName: row['用户名*'] || row['用户名'],
+    userEmail: row['邮箱*'] || row['邮箱'],
+    userGender: (row['性别*'] || row['性别']) === '男' ? 1 : 2,
+    status: (row['状态*'] || row['状态']) === '启用' ? 1 : 2,
+    nickName: row['昵称*'] || row['昵称'] || '',
+    userPhone: row['手机号*'] || row['手机号'] || ''
   }));
 }
 
@@ -292,6 +310,11 @@ async function doImport() {
   const ext = file.name?.split('.').pop()?.toLowerCase();
   if (!ext) {
     message.error('文件格式无效');
+    return;
+  }
+  // 验证文件格式
+  if (!['xlsx', 'xls', 'csv'].includes(ext)) {
+    message.error('文件格式无效，仅支持.xlsx/.xls/.csv格式');
     return;
   }
 
@@ -347,7 +370,9 @@ function exportExcel() {
     message.error('获取列配置失败');
     return;
   }
-  const exportColumns = columns.value.slice(2).filter(col => selectedExportColumns.value.includes(col.key as string));
+  // 转换columns为数组
+  const columnsArray = Array.isArray(columns.value) ? columns.value : Object.values(columns.value);
+  const exportColumns = columnsArray.slice(2).filter(col => selectedExportColumns.value.includes(col.key as string));
 
   if (exportColumns.length === 0) {
     message.error('请选择导出列');
@@ -356,7 +381,7 @@ function exportExcel() {
 
   const excelList = data.value.map(item => exportColumns.map(col => getTableValue(col, item)));
 
-  const titleList = exportColumns.map(col => (isTableColumnHasTitle(col) && col.title) || null);
+  const titleList = exportColumns.map(col => (isTableColumnHasKey(col) ? col.title : null));
 
   excelList.unshift(titleList);
 
@@ -395,12 +420,6 @@ function getTableValue(col: NaiveUI.TableColumn<Api.SystemManage.User>, item: Ap
 
   // @ts-expect-error the key is not in the type of Api.SystemManage.User
   return item[key] || null;
-}
-
-function isTableColumnHasTitle<T>(column: NaiveUI.TableColumn<T>): column is NaiveUI.TableColumnWithKey<T> & {
-  title: string;
-} {
-  return Boolean((column as NaiveUI.TableColumnWithKey<T>).title);
 }
 </script>
 
@@ -455,11 +474,15 @@ function isTableColumnHasTitle<T>(column: NaiveUI.TableColumn<T>): column is Nai
           <NUpload
             :file-list="importFileList"
             accept=".xlsx,.xls,.csv"
-            multiple="false"
+            :multiple="false"
             @before-upload="handleImportFileUpload"
+            @change="handleImportFileChange"
           >
             <NButton type="primary">点击选择文件</NButton>
           </NUpload>
+          <div v-if="importFileList.length > 0" class="mt-2">
+            <span>{{ importFileList[0].name }}</span>
+          </div>
         </NFormItem>
 
         <div v-if="importProgress > 0" class="mb-4">
@@ -467,8 +490,8 @@ function isTableColumnHasTitle<T>(column: NaiveUI.TableColumn<T>): column is Nai
         </div>
 
         <div v-if="importErrors.length > 0" class="mb-4">
-          <h4 class="mb-2 text-red-500">导入错误：</h4>
-          <ul class="max-h-48 overflow-y-auto text-sm text-red-500">
+          <h4 class="mb-2 text-red">导入错误：</h4>
+          <ul class="max-h-48 overflow-y-auto text-sm text-red">
             <li v-for="(error, index) in importErrors" :key="index">
               {{ error }}
             </li>
@@ -476,7 +499,7 @@ function isTableColumnHasTitle<T>(column: NaiveUI.TableColumn<T>): column is Nai
         </div>
 
         <div v-if="importResult.success > 0 || importResult.failed > 0" class="mb-4">
-          <h4 class="mb-2 text-green-500">导入结果：</h4>
+          <h4 class="mb-2 text-green">导入结果：</h4>
           <p>成功导入：{{ importResult.success }} 条</p>
           <p>失败导入：{{ importResult.failed }} 条</p>
         </div>
@@ -494,7 +517,11 @@ function isTableColumnHasTitle<T>(column: NaiveUI.TableColumn<T>): column is Nai
         <NFormItem label="选择导出列">
           <NCheckboxGroup v-model:value="selectedExportColumns">
             <NSpace vertical>
-              <NCheckbox v-for="col in columns.value.slice(2)" :key="col.key" :value="col.key as string">
+              <NCheckbox
+                v-for="col in (Array.isArray(columns.value) ? columns.value : Object.values(columns.value)).slice(2)"
+                :key="col.key"
+                :value="col.key as string"
+              >
                 {{ col.title }}
               </NCheckbox>
             </NSpace>
@@ -529,10 +556,10 @@ function isTableColumnHasTitle<T>(column: NaiveUI.TableColumn<T>): column is Nai
 .mb-2 {
   margin-bottom: 8px;
 }
-.text-red-500 {
+.text-red {
   color: #ff4d4f;
 }
-.text-green-500 {
+.text-green {
   color: #52c41a;
 }
 .max-h-48 {
