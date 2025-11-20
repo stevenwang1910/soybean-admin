@@ -6,7 +6,7 @@ import type { Options } from 'jsbarcode';
 import jsPDF from 'jspdf';
 import 'jspdf/dist/polyfills.es.js';
 import html2canvas from 'html2canvas';
-import pako from 'pako';
+import JSZip from 'jszip';
 import { useLoading } from '@sa/hooks';
 import SvgIcon from '@/components/custom/svg-icon.vue';
 
@@ -180,10 +180,40 @@ async function exportToPDF() {
     // 清理临时容器
     document.body.removeChild(tempContainer);
 
-    // 下载 PDF
-    doc.save('barcode-examples.pdf');
+    // 获取 PDF 内容作为二进制数据
+    const pdfData = doc.output('blob');
 
-    message.success('PDF 导出成功');
+    // 检查文件大小是否超过 10M
+    const fileSizeInMB = pdfData.size / (1024 * 1024);
+    const MAX_SIZE_IN_MB = 10;
+
+    if (fileSizeInMB > MAX_SIZE_IN_MB) {
+      // 如果超过 10M，将 PDF 压缩为 ZIP 文件下载
+      try {
+        // 使用 jszip 创建 ZIP 压缩文件
+        const zip = new JSZip();
+        zip.file('barcode-examples.pdf', pdfData);
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+
+        // 创建下载链接
+        const downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(zipBlob);
+        downloadLink.download = 'barcode-examples.zip';
+        downloadLink.click();
+
+        URL.revokeObjectURL(downloadLink.href);
+        message.success('PDF 文件过大，已压缩为 ZIP 下载');
+      } catch (zipError) {
+        console.error('ZIP 压缩失败:', zipError);
+        message.error('ZIP 压缩失败，将直接下载 PDF');
+        // 如果压缩失败，直接下载 PDF
+        doc.save('barcode-examples.pdf');
+      }
+    } else {
+      // 如果未超过 10M，直接下载 PDF
+      doc.save('barcode-examples.pdf');
+      message.success('PDF 导出成功');
+    }
   } catch (error) {
     console.error('PDF 导出失败:', error);
     message.error('PDF 导出失败');
