@@ -154,6 +154,36 @@ const batchConfig = reactive<{
         textPosition: 'bottom',
         textMargin: 5
       }
+    },
+    ean8: {
+      type: 'ean8',
+      style: {
+        lineColor: '#000000',
+        backgroundColor: '#ffffff',
+        height: 100,
+        width: 2
+      },
+      textStyle: {
+        fontSize: 12,
+        fontOptions: 'normal',
+        textPosition: 'bottom',
+        textMargin: 5
+      }
+    },
+    code39: {
+      type: 'code39',
+      style: {
+        lineColor: '#000000',
+        backgroundColor: '#ffffff',
+        height: 100,
+        width: 2
+      },
+      textStyle: {
+        fontSize: 12,
+        fontOptions: 'normal',
+        textPosition: 'bottom',
+        textMargin: 5
+      }
     }
   },
   selectedStyleFormat: 'code128'
@@ -307,7 +337,18 @@ function generateBatchBarcodes() {
               textMargin: batchConfig.styleByFormat[barcodeType].textStyle.textMargin,
               displayValue: true
             }
-          : previewOptions.value)
+          : {
+              format: barcodeType,
+              lineColor: '#000000',
+              background: '#ffffff',
+              height: 100,
+              width: 2,
+              fontSize: 12,
+              fontOptions: 'normal',
+              textPosition: 'bottom',
+              textMargin: 5,
+              displayValue: true
+            })
       };
 
       JsBarcode(svgElement, barcodeValue, options);
@@ -324,90 +365,133 @@ function generateBatchBarcodes() {
 }
 
 // 批量导出条码
-function exportBatchBarcodes() {
+async function exportBatchBarcodes() {
   if (batchConfig.importedData.length === 0) return;
   if (!batchConfig.barcodeField) return;
-
-  // 确保条码已经生成
-  if (batchBarcodes.value.length === 0) {
-    generateBatchBarcodes();
-  }
 
   // 创建JSZip实例
   const zip = new JSZip();
   const promises: Promise<void>[] = [];
 
   // 导出所有条码，支持1000条以内
-  const exportData = batchBarcodes.value.slice(0, 1000);
+  const exportData = batchConfig.importedData.slice(0, 1000);
 
-  exportData.forEach((barcode, index) => {
+  exportData.forEach((item, index) => {
+    const barcodeValue = String(item[batchConfig.barcodeField]);
     const promise = new Promise<void>((resolve, reject) => {
-      // 创建一个临时的SVG元素
-      const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      tempSvg.innerHTML = barcode.svg;
+      try {
+        // 根据不同条码类型使用相应的配置
+        let barcodeType: string;
+        // 根据条码值自动检测类型
+        if (/^\d{13}$/.test(barcodeValue)) {
+          barcodeType = 'ean13';
+        } else if (/^\d{12}$/.test(barcodeValue)) {
+          barcodeType = 'upc';
+        } else if (/^\d{8}$/.test(barcodeValue)) {
+          barcodeType = 'ean8';
+        } else if (/^[0-9A-Z\-\.\$\/+% \*]*$/.test(barcodeValue)) {
+          barcodeType = 'code39';
+        } else {
+          barcodeType = 'code128';
+        }
+        // 合并配置
+        const options: Options = {
+          ...(batchConfig.useCustomStyle
+            ? {
+                format: barcodeType,
+                lineColor: batchConfig.styleByFormat[barcodeType].style.lineColor,
+                background: batchConfig.styleByFormat[barcodeType].style.backgroundColor,
+                height: batchConfig.styleByFormat[barcodeType].style.height,
+                width: batchConfig.styleByFormat[barcodeType].style.width,
+                fontSize: batchConfig.styleByFormat[barcodeType].textStyle.fontSize,
+                fontOptions: batchConfig.styleByFormat[barcodeType].textStyle.fontOptions,
+                textPosition: batchConfig.styleByFormat[barcodeType].textStyle.textPosition,
+                textMargin: batchConfig.styleByFormat[barcodeType].textStyle.textMargin,
+                displayValue: true
+              }
+            : {
+                format: barcodeType,
+                lineColor: '#000000',
+                background: '#ffffff',
+                height: 100,
+                width: 2,
+                fontSize: 12,
+                fontOptions: 'normal',
+                textPosition: 'bottom',
+                textMargin: 5,
+                displayValue: true
+              })
+        };
 
-      // 设置SVG尺寸
-      const svgRect = tempSvg.getBoundingClientRect();
-      const svgWidth = svgRect.width || 300;
-      const svgHeight = svgRect.height || 150;
-      tempSvg.setAttribute('width', svgWidth.toString());
-      tempSvg.setAttribute('height', svgHeight.toString());
+        // 创建SVG元素并生成条码
+        const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        JsBarcode(tempSvg, barcodeValue, options);
 
-      // 将SVG转换为Canvas
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return resolve();
+        // 设置SVG尺寸
+        const svgRect = tempSvg.getBoundingClientRect();
+        const svgWidth = svgRect.width || 300;
+        const svgHeight = svgRect.height || 150;
+        tempSvg.setAttribute('width', svgWidth.toString());
+        tempSvg.setAttribute('height', svgHeight.toString());
 
-      // 计算Canvas高度（如果包含信息需要额外空间）
-      let canvasHeight = svgHeight;
-      const infoY = svgHeight + 20;
-      if (batchConfig.includeInfo) {
-        const infoLines = Object.entries(barcode.data).length;
-        canvasHeight += 20 + infoLines * 20;
-      }
+        // 将SVG转换为Canvas
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return resolve();
 
-      canvas.width = svgWidth;
-      canvas.height = canvasHeight;
-
-      // 创建Image对象并绘制到Canvas
-      const img = new Image();
-      // 处理跨域问题
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        // 绘制SVG
-        ctx.drawImage(img, 0, 0);
-
-        // 如果需要包含商品信息，添加到Canvas
+        // 计算Canvas高度（如果包含信息需要额外空间）
+        let canvasHeight = svgHeight;
+        const infoY = svgHeight + 20;
         if (batchConfig.includeInfo) {
-          ctx.fillStyle = '#000000';
-          ctx.font = '12px Arial Unicode MS'; // 使用支持中文的字体
-          ctx.textAlign = 'center';
-
-          // 绘制商品信息
-          Object.entries(barcode.data).forEach(([key, value], i) => {
-            const y = infoY + i * 20;
-            ctx.fillText(`${key}: ${value}`, svgWidth / 2, y);
-          });
+          const infoLines = Object.entries(item).length;
+          canvasHeight += 20 + infoLines * 20;
         }
 
-        // 导出为图片
-        const dataURL = canvas.toDataURL(`image/${batchConfig.exportFormat}`);
-        const blob = dataURLToBlob(dataURL);
-        const barcodeValue = barcode.data[batchConfig.barcodeField];
-        const fileName = `${barcodeValue}.${batchConfig.exportFormat}`;
-        // 添加到zip文件
-        zip.file(fileName, blob);
-        resolve();
-      };
-      img.onerror = error => {
-        console.error('图片加载失败:', error);
-        resolve();
-      };
+        canvas.width = svgWidth;
+        canvas.height = canvasHeight;
 
-      // 将SVG转换为data URL，确保中文正确编码
-      const svgString = new XMLSerializer().serializeToString(tempSvg);
-      const encodedSvg = encodeURIComponent(svgString);
-      img.src = `data:image/svg+xml;utf-8,${encodedSvg}`;
+        // 创建Image对象并绘制到Canvas
+        const img = new Image();
+        // 处理跨域问题
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          // 绘制SVG
+          ctx.drawImage(img, 0, 0);
+
+          // 如果需要包含商品信息，添加到Canvas
+          if (batchConfig.includeInfo) {
+            ctx.fillStyle = '#000000';
+            ctx.font = '12px Arial Unicode MS'; // 使用支持中文的字体
+            ctx.textAlign = 'center';
+
+            // 绘制商品信息
+            Object.entries(item).forEach(([key, value], i) => {
+              const y = infoY + i * 20;
+              ctx.fillText(`${key}: ${value}`, svgWidth / 2, y);
+            });
+          }
+
+          // 导出为图片
+          const dataURL = canvas.toDataURL(`image/${batchConfig.exportFormat}`);
+          const blob = dataURLToBlob(dataURL);
+          const fileName = `${barcodeValue}.${batchConfig.exportFormat}`;
+          // 添加到zip文件
+          zip.file(fileName, blob);
+          resolve();
+        };
+        img.onerror = error => {
+          console.error('图片加载失败:', error);
+          resolve();
+        };
+
+        // 将SVG转换为data URL，确保中文正确编码
+        const svgString = new XMLSerializer().serializeToString(tempSvg);
+        const encodedSvg = encodeURIComponent(svgString);
+        img.src = `data:image/svg+xml;utf-8,${encodedSvg}`;
+      } catch (error) {
+        console.error('生成条码失败:', error);
+        resolve();
+      }
     });
 
     promises.push(promise);
