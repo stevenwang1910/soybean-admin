@@ -245,6 +245,7 @@ const local: App.I18n.Schema = {
     'pro-naive_form_basic': '基础表单',
     'pro-naive_form_query': '查询表单',
     'pro-naive_form_step': '分步表单',
+    'pro-naive_form_query-step': '查询多步骤表单',
     'pro-naive_table': '表格',
     'pro-naive_table_remote': '远程加载',
     'pro-naive_table_row-edit': '行编辑',
@@ -485,6 +486,92 @@ const local: App.I18n.Schema = {
             field: '表单2字段',
             prevStep: '上一步',
             submit: '提交'
+          }
+        },
+        queryStep: {
+          title: '查询多步骤表单',
+          listTitle: '查询结果列表',
+          prevStep: '上一步',
+          nextStep: '下一步',
+          submit: '提交查询',
+          reset: '重置表单',
+          submitting: '正在提交查询...',
+          submitSuccess: '查询提交成功',
+          submitError: '查询提交失败',
+          resetSuccess: '表单重置成功',
+          validationError: '表单验证失败，请检查输入内容',
+          step1: {
+            title: '基本信息',
+            description: '填写应用的基本信息',
+            appName: '应用名称',
+            appNameRequired: '请输入应用名称',
+            appStatus: '应用状态',
+            appStatusRequired: '请选择应用状态'
+          },
+          step2: {
+            title: '时间范围',
+            description: '选择查询的时间范围',
+            createTime: '创建时间',
+            responseDate: '响应日期',
+            endTime: '结束时间'
+          },
+          step3: {
+            title: '用户信息',
+            description: '填写用户相关信息',
+            userName: '用户姓名',
+            userNameRequired: '请输入用户姓名',
+            userEmail: '用户邮箱',
+            userEmailRequired: '请输入用户邮箱',
+            userEmailInvalid: '请输入有效的邮箱地址',
+            userPhone: '用户电话',
+            userPhoneRequired: '请输入用户电话',
+            userPhoneInvalid: '请输入有效的手机号码'
+          },
+          step4: {
+            title: '高级选项',
+            description: '设置查询的高级选项',
+            priority: '优先级',
+            category: '分类',
+            tags: '标签'
+          },
+          step5: {
+            title: '确认信息',
+            description: '确认查询信息是否正确',
+            confirmTitle: '确认查询信息',
+            notes: '备注信息'
+          },
+          status: {
+            active: '活跃',
+            inactive: '停用',
+            pending: '待审核'
+          },
+          priority: {
+            high: '高',
+            medium: '中',
+            low: '低'
+          },
+          category: {
+            music: '音乐',
+            video: '视频',
+            image: '图片',
+            document: '文档'
+          },
+          tags: {
+            rock: '摇滚',
+            pop: '流行',
+            jazz: '爵士',
+            classical: '古典'
+          },
+          table: {
+            id: 'ID',
+            appName: '应用名称',
+            appStatus: '应用状态',
+            createTime: '创建时间',
+            userName: '用户姓名',
+            priority: '优先级',
+            category: '分类',
+            tags: '标签',
+            image: '图片'
           }
         }
       },

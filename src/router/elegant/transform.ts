@@ -237,6 +237,7 @@ const routeMap: RouteMap = {
   "pro-naive_form": "/pro-naive/form",
   "pro-naive_form_basic": "/pro-naive/form/basic",
   "pro-naive_form_query": "/pro-naive/form/query",
+  "pro-naive_form_query-step": "/pro-naive/form/query-step",
   "pro-naive_form_step": "/pro-naive/form/step",
   "pro-naive_table": "/pro-naive/table",
   "pro-naive_table_remote": "/pro-naive/table/remote",
