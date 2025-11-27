@@ -650,6 +650,15 @@ export const generatedRoutes: GeneratedRoute[] = [
             }
           },
           {
+            name: 'pro-naive_form_query-step',
+            path: '/pro-naive/form/query-step',
+            component: 'view.pro-naive_form_query-step',
+            meta: {
+              title: 'pro-naive_form_query-step',
+              i18nKey: 'route.pro-naive_form_query-step'
+            }
+          },
+          {
             name: 'pro-naive_form_step',
             path: '/pro-naive/form/step',
             component: 'view.pro-naive_form_step',
