@@ -248,6 +248,7 @@ const local: App.I18n.Schema = {
     'pro-naive_form_basic': 'Basic Form',
     'pro-naive_form_query': 'Query Form',
     'pro-naive_form_step': 'Step Form',
+    'pro-naive_form_query-step': 'Query Step Form',
     'pro-naive_table': 'Table',
     'pro-naive_table_remote': 'Remote',
     'pro-naive_table_row-edit': 'Row Edit',
@@ -488,6 +489,92 @@ const local: App.I18n.Schema = {
             field: 'Form 2 field',
             prevStep: 'Prev Step',
             submit: 'Submit'
+          }
+        },
+        queryStep: {
+          title: 'Query Step Form',
+          listTitle: 'Query Result List',
+          prevStep: 'Prev Step',
+          nextStep: 'Next Step',
+          submit: 'Submit Query',
+          reset: 'Reset Form',
+          submitting: 'Submitting query...',
+          submitSuccess: 'Query submitted successfully',
+          submitError: 'Query submission failed',
+          resetSuccess: 'Form reset successfully',
+          validationError: 'Form validation failed, please check the input',
+          step1: {
+            title: 'Basic Information',
+            description: 'Fill in the basic information of the application',
+            appName: 'Application Name',
+            appNameRequired: 'Please enter application name',
+            appStatus: 'Application Status',
+            appStatusRequired: 'Please select application status'
+          },
+          step2: {
+            title: 'Time Range',
+            description: 'Select the time range for the query',
+            createTime: 'Create Time',
+            responseDate: 'Response Date',
+            endTime: 'End Time'
+          },
+          step3: {
+            title: 'User Information',
+            description: 'Fill in user related information',
+            userName: 'User Name',
+            userNameRequired: 'Please enter user name',
+            userEmail: 'User Email',
+            userEmailRequired: 'Please enter user email',
+            userEmailInvalid: 'Please enter a valid email address',
+            userPhone: 'User Phone',
+            userPhoneRequired: 'Please enter user phone',
+            userPhoneInvalid: 'Please enter a valid phone number'
+          },
+          step4: {
+            title: 'Advanced Options',
+            description: 'Set advanced options for the query',
+            priority: 'Priority',
+            category: 'Category',
+            tags: 'Tags'
+          },
+          step5: {
+            title: 'Confirm Information',
+            description: 'Confirm whether the query information is correct',
+            confirmTitle: 'Confirm Query Information',
+            notes: 'Notes'
+          },
+          status: {
+            active: 'Active',
+            inactive: 'Inactive',
+            pending: 'Pending'
+          },
+          priority: {
+            high: 'High',
+            medium: 'Medium',
+            low: 'Low'
+          },
+          category: {
+            music: 'Music',
+            video: 'Video',
+            image: 'Image',
+            document: 'Document'
+          },
+          tags: {
+            rock: 'Rock',
+            pop: 'Pop',
+            jazz: 'Jazz',
+            classical: 'Classical'
+          },
+          table: {
+            id: 'ID',
+            appName: 'Application Name',
+            appStatus: 'Application Status',
+            createTime: 'Create Time',
+            userName: 'User Name',
+            priority: 'Priority',
+            category: 'Category',
+            tags: 'Tags',
+            image: 'Image'
           }
         }
       },
