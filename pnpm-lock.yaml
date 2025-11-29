@@ -23,6 +23,12 @@ importers:
       '@iconify/vue':
         specifier: 5.0.0
         version: 5.0.0(vue@3.5.22(typescript@5.9.3))
+      '@logicflow/core':
+        specifier: ^2.1.3
+        version: 2.1.3
+      '@logicflow/extension':
+        specifier: ^2.1.5
+        version: 2.1.5(@logicflow/core@2.1.3)(@logicflow/vue-node-registry@1.1.4(@logicflow/core@2.1.3)(vue@3.5.22(typescript@5.9.3)))
       '@sa/alova':
         specifier: workspace:*
         version: link:packages/alova
@@ -955,6 +961,25 @@ packages:
   '@juggle/resize-observer@3.4.0':
     resolution: {integrity: sha512-dfLbk+PwWvFzSxwk3n5ySL0hfBog779o8h68wK/7/APo/7cgyWp5jcXockbxdk5kFRkbeXWm4Fbi9FrdN381sA==}
 
+  '@logicflow/core@2.1.3':
+    resolution: {integrity: sha512-6eNawqWio58/N2F2+Z4G8VUKWENVXCokuNArAfRvEPxZmkYj3ZiYWyCBLoadXtfiGi2QZsc74RVGkRiJBYAN4w==}
+
+  '@logicflow/extension@2.1.5':
+    resolution: {integrity: sha512-oDAASCiaSYAYdjZm2am5sQRrwUbJWxfzey3pb2mTKNEBaLwCymokLNbCmr0NrTH1/JJ8pC1HcCXsW/4m/Yqung==}
+    peerDependencies:
+      '@logicflow/core': 2.1.3
+      '@logicflow/vue-node-registry': 1.1.4
+
+  '@logicflow/vue-node-registry@1.1.4':
+    resolution: {integrity: sha512-/rV6xCu6dwUs6+DWVolEL3V5rioCIPAQ9Z3c6O1SgbnjjB9qja+nQVfXSQY6pgYagmOFzIa61zP8O8jKYNZ6yQ==}
+    peerDependencies:
+      '@logicflow/core': 2.1.3
+      '@vue/composition-api': ^1.0.0-rc.10
+      vue: ^2.0.0 || >=3.0.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+
   '@naoak/workerize-transferable@0.1.0':
     resolution: {integrity: sha512-fDLfuP71IPNP5+zSfxFb52OHgtjZvauRJWbVnpzQ7G7BjcbLjTny0OW1d3ZO806XKpLWNKmeeW3MhE0sy8iwYQ==}
     peerDependencies:
@@ -1413,6 +1438,9 @@ packages:
         optional: true
       vue-eslint-parser:
         optional: true
+
+  '@sphinxxxx/color-conversion@2.2.2':
+    resolution: {integrity: sha512-XExJS3cLqgrmNBIP3bBw6+1oQ1ksGjFh0+oClDKFYpCCqx/hlqwWO5KO/S63fzUo67SxI9dMrF0y5T/Ey7h8Zw==}
 
   '@trysound/sax@0.2.0':
     resolution: {integrity: sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==}
@@ -2346,6 +2374,9 @@ packages:
   class-utils@0.3.6:
     resolution: {integrity: sha512-qOhPa/Fj7s6TY8H8esGu5QNpMMQxz79h+urzrNYN6mn+9BnxlDGf5QZ+XeCDsxSjPqsSR56XOZOJmpeurnLMeg==}
     engines: {node: '>=0.10.0'}
+
+  classnames@2.5.1:
+    resolution: {integrity: sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow==}
 
   clean-regexp@1.0.0:
     resolution: {integrity: sha512-GfisEZEJvzKrmGWkvfhgzcz/BllN1USeqD2V6tg14OAOgaCD2Z/PUEuxnAZ/nPvmaHRG7a8y77p1T/IRQ4D1Hw==}
@@ -3439,6 +3470,9 @@ packages:
     resolution: {integrity: sha512-Xwwo44whKBVCYoliBQwaPvtd/2tYFkRQtXDWj1nackaV2JPXx3L0+Jvd8/qCJ2p+ML0/XVkJ2q+Mr+UVdpJK5w==}
     engines: {node: '>=12.0.0'}
 
+  hoist-non-react-statics@2.5.5:
+    resolution: {integrity: sha512-rqcy4pJo55FTTLWt+bU8ukscqHeE/e9KWvsOW2b/a3afxQZhwkQdT1rPPCJ0rYXdj4vNcasY8zHTH+jF/qStxw==}
+
   hookable@5.5.3:
     resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
 
@@ -3926,6 +3960,9 @@ packages:
   mdn-data@2.12.2:
     resolution: {integrity: sha512-IEn+pegP1aManZuckezWCO+XZQDplx1366JoVhTpMpBB1sPey/SbveZQUosKiKiGYjg1wH4pMlNgXbCiYgihQA==}
 
+  medium-editor@5.23.3:
+    resolution: {integrity: sha512-he9/TdjX8f8MGdXGfCs8AllrYnqXJJvjNkDKmPg3aPW/uoIrlRqtkFthrwvmd+u4QyzEiadhCCM0EwTiRdUCJw==}
+
   merge-options@1.0.1:
     resolution: {integrity: sha512-iuPV41VWKWBIOpBsjoxjDZw8/GbSfZ2mk7N1453bwMrfzdrIk7EzBd+8UVR6rkw67th7xnk9Dytl3J+lHPdxvg==}
     engines: {node: '>=4'}
@@ -4011,6 +4048,23 @@ packages:
 
   mlly@1.8.0:
     resolution: {integrity: sha512-l8D9ODSRWLe2KHJSifWGwBqpTZXIXTeo8mlKjY+E2HAakaTeNpqAyBZ8GSqLzHgw4XmHmC8whvpjJNMbFZN7/g==}
+
+  mobx-preact@3.0.0:
+    resolution: {integrity: sha512-ijan/cBs3WmRye87E5+3JmoFBB00KDAwNA3pm7bMwYLPHBAXlN86aC3gdrXw8aKzM5RI8V3a993PphzPv6P4FA==}
+    peerDependencies:
+      mobx: 5.x
+      preact: '>=8'
+
+  mobx-utils@5.6.2:
+    resolution: {integrity: sha512-a/WlXyGkp6F12b01sTarENpxbmlRgPHFyR1Xv2bsSjQBm5dcOtd16ONb40/vOqck8L99NHpI+C9MXQ+SZ8f+yw==}
+    peerDependencies:
+      mobx: ^4.13.1 || ^5.13.1
+
+  mobx@5.15.7:
+    resolution: {integrity: sha512-wyM3FghTkhmC+hQjyPGGFdpehrcX1KOXsDuERhfK2YbJemkUhEB+6wzEN639T21onxlfYBmriA1PFnvxTUhcKw==}
+
+  mousetrap@1.6.5:
+    resolution: {integrity: sha512-QNo4kEepaIBwiT8CDhP98umTetp+JNfQYBWvC1pc6/OAibuXtRcxZ58Qz8skvEHYvURne/7R8T5VoOI7rDsEUA==}
 
   mrmime@2.0.1:
     resolution: {integrity: sha512-Y3wQdFg2Va6etvQ5I82yUhGdsKrcYox6p7FfL1LbK2J4V01F9TGlepTIhnK24t7koZibmg82KGglhA1XK5IsLQ==}
@@ -4355,6 +4409,9 @@ packages:
     resolution: {integrity: sha512-spBB5sgC4cv2YcW03f/IAUN1pgDJWNWD8FzkyY4mArLUMJW+KlQhlmUdKAHQuPfb00Jl5xIfImeOsf6YL8QK7Q==}
     engines: {node: '>=0.10.0'}
 
+  preact@10.27.2:
+    resolution: {integrity: sha512-5SYSgFKSyhCbk6SrXyMpqjb5+MQBgfvEKE/OC+PujcY34sOpqtr+0AZQtPYx5IA6VxynQ7rUPCtKzyovpj9Bpg==}
+
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
@@ -4438,6 +4495,9 @@ packages:
 
   randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
+
+  rangy@1.3.2:
+    resolution: {integrity: sha512-fS1C4MOyk8T+ZJZdLcgrukPWxkyDXa+Hd2Kj+Zg4wIK71yrWgmjzHubzPMY1G+WD9EgGxMp3fIL0zQ1ickmSWA==}
 
   rate-limiter-flexible@5.0.5:
     resolution: {integrity: sha512-+/dSQfo+3FYwYygUs/V2BBdwGa9nFtakDwKt4l0bnvNB53TNT++QSFewwHX9qXrZJuMe9j+TUaU21lm5ARgqdQ==}
@@ -5138,6 +5198,13 @@ packages:
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
+
+  uuid@9.0.1:
+    resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
+    hasBin: true
+
+  vanilla-picker@2.12.3:
+    resolution: {integrity: sha512-qVkT1E7yMbUsB2mmJNFmaXMWE2hF8ffqzMMwe9zdAikd8u2VfnsVY2HQcOUi2F38bgbxzlJBEdS1UUhOXdF9GQ==}
 
   vary@1.1.2:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
@@ -6225,6 +6292,37 @@ snapshots:
 
   '@juggle/resize-observer@3.4.0': {}
 
+  '@logicflow/core@2.1.3':
+    dependencies:
+      classnames: 2.5.1
+      lodash-es: 4.17.21
+      mobx: 5.15.7
+      mobx-preact: 3.0.0(mobx@5.15.7)(preact@10.27.2)
+      mobx-utils: 5.6.2(mobx@5.15.7)
+      mousetrap: 1.6.5
+      preact: 10.27.2
+      uuid: 9.0.1
+
+  '@logicflow/extension@2.1.5(@logicflow/core@2.1.3)(@logicflow/vue-node-registry@1.1.4(@logicflow/core@2.1.3)(vue@3.5.22(typescript@5.9.3)))':
+    dependencies:
+      '@antv/hierarchy': 0.6.14
+      '@logicflow/core': 2.1.3
+      '@logicflow/vue-node-registry': 1.1.4(@logicflow/core@2.1.3)(vue@3.5.22(typescript@5.9.3))
+      classnames: 2.5.1
+      lodash-es: 4.17.21
+      medium-editor: 5.23.3
+      mobx: 5.15.7
+      preact: 10.27.2
+      rangy: 1.3.2
+      vanilla-picker: 2.12.3
+
+  '@logicflow/vue-node-registry@1.1.4(@logicflow/core@2.1.3)(vue@3.5.22(typescript@5.9.3))':
+    dependencies:
+      '@logicflow/core': 2.1.3
+      lodash-es: 4.17.21
+      vue: 3.5.22(typescript@5.9.3)
+      vue-demi: 0.14.10(vue@3.5.22(typescript@5.9.3))
+
   '@naoak/workerize-transferable@0.1.0(workerize-loader@2.0.2(webpack@5.102.1))':
     dependencies:
       workerize-loader: 2.0.2(webpack@5.102.1)
@@ -6553,6 +6651,8 @@ snapshots:
       - '@typescript-eslint/utils'
       - eslint-import-resolver-node
       - supports-color
+
+  '@sphinxxxx/color-conversion@2.2.2': {}
 
   '@trysound/sax@0.2.0': {}
 
@@ -7759,6 +7859,8 @@ snapshots:
       define-property: 0.2.5
       isobject: 3.0.1
       static-extend: 0.1.2
+
+  classnames@2.5.1: {}
 
   clean-regexp@1.0.0:
     dependencies:
@@ -8970,6 +9072,8 @@ snapshots:
 
   highlight.js@11.11.1: {}
 
+  hoist-non-react-statics@2.5.5: {}
+
   hookable@5.5.3: {}
 
   htmlparser2@3.10.1:
@@ -9416,6 +9520,8 @@ snapshots:
 
   mdn-data@2.12.2: {}
 
+  medium-editor@5.23.3: {}
+
   merge-options@1.0.1:
     dependencies:
       is-plain-obj: 1.1.0
@@ -9514,6 +9620,20 @@ snapshots:
       pathe: 2.0.3
       pkg-types: 1.3.1
       ufo: 1.6.1
+
+  mobx-preact@3.0.0(mobx@5.15.7)(preact@10.27.2):
+    dependencies:
+      hoist-non-react-statics: 2.5.5
+      mobx: 5.15.7
+      preact: 10.27.2
+
+  mobx-utils@5.6.2(mobx@5.15.7):
+    dependencies:
+      mobx: 5.15.7
+
+  mobx@5.15.7: {}
+
+  mousetrap@1.6.5: {}
 
   mrmime@2.0.1: {}
 
@@ -9866,6 +9986,8 @@ snapshots:
       posthtml-parser: 0.2.1
       posthtml-render: 1.4.0
 
+  preact@10.27.2: {}
+
   prelude-ls@1.2.1: {}
 
   prettier-linter-helpers@1.0.0:
@@ -9949,6 +10071,8 @@ snapshots:
   randombytes@2.1.0:
     dependencies:
       safe-buffer: 5.2.1
+
+  rangy@1.3.2: {}
 
   rate-limiter-flexible@5.0.5: {}
 
@@ -10775,6 +10899,12 @@ snapshots:
   use@3.1.1: {}
 
   util-deprecate@1.0.2: {}
+
+  uuid@9.0.1: {}
+
+  vanilla-picker@2.12.3:
+    dependencies:
+      '@sphinxxxx/color-conversion': 2.2.2
 
   vary@1.1.2: {}
 
