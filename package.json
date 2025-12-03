@@ -73,6 +73,7 @@
     "echarts": "6.0.0",
     "jsbarcode": "3.12.1",
     "json5": "2.2.3",
+    "jspdf": "^3.0.3",
     "naive-ui": "2.43.1",
     "nprogress": "0.2.0",
     "pinia": "3.0.3",
