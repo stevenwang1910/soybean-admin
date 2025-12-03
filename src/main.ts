@@ -11,6 +11,7 @@ import {
 import { setupStore } from './store';
 import { setupRouter } from './router';
 import { setupI18n } from './locales';
+import { usePropertyPermissionStore } from './store/modules/propertyPermission';
 import App from './App.vue';
 
 async function setupApp() {
@@ -25,6 +26,10 @@ async function setupApp() {
   const app = createApp(App);
 
   setupStore(app);
+
+  // 加载属性权限配置
+  const propertyPermissionStore = usePropertyPermissionStore();
+  await propertyPermissionStore.loadAllProperties();
 
   await setupRouter(app);
 

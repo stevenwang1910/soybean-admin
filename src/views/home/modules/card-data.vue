@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { createReusableTemplate } from '@vueuse/core';
 import { useThemeStore } from '@/store/modules/theme';
 import { $t } from '@/locales';
+import { usePropertyPermission } from '@/hooks/common/usePropertyPermission';
 
 defineOptions({
   name: 'CardData'
@@ -20,52 +21,74 @@ interface CardData {
   icon: string;
 }
 
-const cardData = computed<CardData[]>(() => [
-  {
-    key: 'visitCount',
-    title: $t('page.home.visitCount'),
-    value: 9725,
-    unit: '',
-    color: {
-      start: '#ec4786',
-      end: '#b955a4'
+const { hasPermission } = usePropertyPermission();
+
+import { ref, onMounted } from 'vue';
+
+const cardData = ref<CardData[]>([]);
+
+// 加载卡片数据
+async function loadCardData() {
+  const basicData: CardData[] = [
+    {
+      key: 'visitCount',
+      title: $t('page.home.visitCount'),
+      value: 9725,
+      unit: '',
+      color: {
+        start: '#ec4786',
+        end: '#b955a4'
+      },
+      icon: 'ant-design:bar-chart-outlined'
     },
-    icon: 'ant-design:bar-chart-outlined'
-  },
-  {
-    key: 'turnover',
-    title: $t('page.home.turnover'),
-    value: 1026,
-    unit: '$',
-    color: {
-      start: '#865ec0',
-      end: '#5144b4'
+    {
+      key: 'downloadCount',
+      title: $t('page.home.downloadCount'),
+      value: 970925,
+      unit: '',
+      color: {
+        start: '#56cdf3',
+        end: '#719de3'
+      },
+      icon: 'carbon:document-download'
     },
-    icon: 'ant-design:money-collect-outlined'
-  },
-  {
-    key: 'downloadCount',
-    title: $t('page.home.downloadCount'),
-    value: 970925,
-    unit: '',
-    color: {
-      start: '#56cdf3',
-      end: '#719de3'
-    },
-    icon: 'carbon:document-download'
-  },
-  {
-    key: 'dealCount',
-    title: $t('page.home.dealCount'),
-    value: 9527,
-    unit: '',
-    color: {
-      start: '#fcbc25',
-      end: '#f68057'
-    },
-    icon: 'ant-design:trademark-circle-outlined'
+    {
+      key: 'dealCount',
+      title: $t('page.home.dealCount'),
+      value: 9527,
+      unit: '',
+      color: {
+        start: '#fcbc25',
+        end: '#f68057'
+      },
+      icon: 'ant-design:trademark-circle-outlined'
+    }
+  ];
+
+  const hasTurnoverPermission = await hasPermission('home', 'turnover');
+  
+  if (hasTurnoverPermission) {
+    const turnoverData = {
+      key: 'turnover',
+      title: $t('page.home.turnover'),
+      value: 1026,
+      unit: '$',
+      color: {
+        start: '#865ec0',
+        end: '#5144b4'
+      },
+      icon: 'ant-design:money-collect-outlined'
+    };
+    cardData.value = [turnoverData, ...basicData];
+  } else {
+    cardData.value = basicData;
   }
-]);
+}
+
+// 组件挂载时加载数据
+onMounted(() => {
+  loadCardData();
+});
 
 interface GradientBgProps {
   gradientColor: string;
